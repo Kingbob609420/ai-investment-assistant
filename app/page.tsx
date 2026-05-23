@@ -1,65 +1,515 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState, useCallback, useRef } from "react";
+import {
+  motion,
+  AnimatePresence,
+  useScroll,
+  useTransform,
+  useSpring,
+  useInView,
+} from "framer-motion";
+import Navbar from "@/components/Navbar";
+import TickerTape from "@/components/TickerTape";
+import StockSearch from "@/components/StockSearch";
+import StockChart from "@/components/StockChart";
+import MetricsPanel from "@/components/MetricsPanel";
+import AIInsights from "@/components/AIInsights";
+import RiskIndicator from "@/components/RiskIndicator";
+import WatchlistDrawer from "@/components/WatchlistDrawer";
+import { StockData, TimeRange } from "@/lib/types";
+import { prepareChartData } from "@/lib/calculations";
+
+/* ── Background ─────────────────────────────────────────────────────────── */
+function Orbs() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="fixed inset-0 pointer-events-none overflow-hidden">
+      <motion.div
+        animate={{ x: [0, 60, 0], y: [0, -40, 0], scale: [1, 1.1, 1] }}
+        transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
+        className="absolute top-1/4 left-1/5 h-[700px] w-[700px] rounded-full"
+        style={{ background: "radial-gradient(circle, rgba(34,211,238,0.045) 0%, transparent 70%)" }}
+      />
+      <motion.div
+        animate={{ x: [0, -60, 0], y: [0, 50, 0], scale: [1, 1.15, 1] }}
+        transition={{ duration: 28, repeat: Infinity, ease: "easeInOut", delay: 6 }}
+        className="absolute bottom-1/4 right-1/5 h-[600px] w-[600px] rounded-full"
+        style={{ background: "radial-gradient(circle, rgba(139,92,246,0.05) 0%, transparent 70%)" }}
+      />
+      <motion.div
+        animate={{ x: [0, 40, 0], y: [0, 30, 0] }}
+        transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 12 }}
+        className="absolute top-2/3 left-1/2 h-[400px] w-[400px] rounded-full"
+        style={{ background: "radial-gradient(circle, rgba(59,130,246,0.04) 0%, transparent 70%)" }}
+      />
+      <div
+        className="absolute inset-0 opacity-[0.022]"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,.6) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.6) 1px, transparent 1px)",
+          backgroundSize: "60px 60px",
+        }}
+      />
+    </div>
+  );
+}
+
+/* ── Scroll-reveal wrapper ───────────────────────────────────────────────── */
+function Reveal({
+  children,
+  delay = 0,
+  y = 40,
+  className = "",
+}: {
+  children: React.ReactNode;
+  delay?: number;
+  y?: number;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-80px" });
+  return (
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/* ── Staggered grid reveal ───────────────────────────────────────────────── */
+function StaggerReveal({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-60px" });
+  return (
+    <motion.div
+      ref={ref}
+      initial="hidden"
+      animate={inView ? "show" : "hidden"}
+      variants={{ hidden: {}, show: { transition: { staggerChildren: 0.1 } } }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+/* ── Feature card ────────────────────────────────────────────────────────── */
+const FEATURES = [
+  { icon: "📊", title: "Real Financial Data",    desc: "Live quotes + historical OHLCV from Yahoo Finance — no API key needed.",           color: "from-cyan-500/15 to-blue-500/8",    border: "border-cyan-500/20" },
+  { icon: "🧠", title: "AI-Powered Insights",    desc: "Plain-English analysis of momentum, trend, and risk for beginner investors.",       color: "from-purple-500/15 to-pink-500/8",  border: "border-purple-500/20" },
+  { icon: "📈", title: "Interactive Charts",     desc: "Area price chart + volume bars with moving average overlays and smooth tooltips.", color: "from-green-500/15 to-teal-500/8",   border: "border-green-500/20" },
+  { icon: "⚡", title: "Risk Scoring",           desc: "Volatility, Sharpe ratio, max drawdown and a visual risk meter — instantly.",       color: "from-orange-500/15 to-yellow-500/8",border: "border-orange-500/20" },
+];
+
+/* ── Loading skeleton ────────────────────────────────────────────────────── */
+function Skeleton({ h }: { h: number }) {
+  return (
+    <div
+      className="rounded-2xl border border-white/8 bg-white/[0.025] overflow-hidden relative"
+      style={{ height: h }}
+    >
+      <div className="shimmer absolute inset-0" />
+    </div>
+  );
+}
+
+/* ── Demo banner ─────────────────────────────────────────────────────────── */
+function DemoBanner() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -12 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="mb-5 flex items-center gap-3 rounded-xl border border-yellow-500/30 bg-yellow-500/8 px-4 py-3"
+    >
+      <span className="text-base">⚠️</span>
+      <div>
+        <p className="text-sm font-semibold text-yellow-300">Demo mode — Yahoo Finance is currently unreachable</p>
+        <p className="text-xs text-yellow-600 mt-0.5">Showing simulated data so you can explore all features. Real data will load when the connection is restored.</p>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ── Main ────────────────────────────────────────────────────────────────── */
+export default function Home() {
+  const [data,          setData]          = useState<StockData | null>(null);
+  const [loading,       setLoading]       = useState(false);
+  const [error,         setError]         = useState<string | null>(null);
+  const [currentSymbol, setCurrentSymbol] = useState("");
+  const resultsRef = useRef<HTMLDivElement>(null);
+
+  const { scrollYProgress } = useScroll();
+  const heroScale   = useTransform(scrollYProgress, [0, 0.3], [1, 0.95]);
+  const heroOpacity = useTransform(scrollYProgress, [0, 0.22], [1, 0.6]);
+  const springScale = useSpring(heroScale, { stiffness: 80, damping: 25 });
+
+  const handleSearch = useCallback(async (symbol: string, range: TimeRange) => {
+    setLoading(true);
+    setError(null);
+    setCurrentSymbol(symbol);
+    setData(null);
+
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 12000);
+
+      const res = await fetch(
+        `/api/stock?symbol=${encodeURIComponent(symbol)}&range=${range}`,
+        { signal: controller.signal }
+      );
+      clearTimeout(timeout);
+
+      let json: StockData & { demo?: boolean };
+      try {
+        json = await res.json();
+      } catch {
+        setError("Server returned an unexpected response. Please try again.");
+        return;
+      }
+
+      if (!res.ok) {
+        const msg = (json as { error?: string }).error;
+        setError(msg || `Could not find "${symbol}". Check the ticker and try again.`);
+        return;
+      }
+
+      setData(json);
+      setTimeout(() => {
+        resultsRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 80);
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") {
+        setError("Request timed out. Check your internet connection and try again.");
+      } else {
+        setError(
+          'Cannot reach the server — run  npm run dev  in your project folder, then reload this page.'
+        );
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const chartData = data ? prepareChartData(data.historical, data.metrics) : [];
+
+  return (
+    <div className="min-h-screen bg-[#04060f] text-slate-100 overflow-x-hidden">
+      <Orbs />
+      <Navbar />
+      <WatchlistDrawer onSelect={(sym) => handleSearch(sym, "1Y")} />
+
+      {/* ── Hero ──────────────────────────────────────────────────────── */}
+      <motion.section
+        style={{ scale: springScale, opacity: heroOpacity }}
+        className="relative min-h-screen flex flex-col justify-center pt-20"
+      >
+        <div className="absolute top-20 left-0 right-0">
+          <TickerTape />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+        <div className="relative mx-auto max-w-4xl px-6 pt-28 pb-20 text-center">
+          {/* Badge */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.7, y: -20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-4 py-2 text-xs text-cyan-400 mb-8"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+            <motion.span
+              animate={{ scale: [1, 1.6, 1], opacity: [1, 0.4, 1] }}
+              transition={{ duration: 2, repeat: Infinity }}
+              className="h-1.5 w-1.5 rounded-full bg-cyan-400"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            AI-Powered Stock Research · Free · No API Key Required
+          </motion.div>
+
+          {/* Headline — each word fades in */}
+          {["Smart", "Investment", "Research"].map((word, i) => (
+            <motion.span
+              key={word}
+              initial={{ opacity: 0, y: 40, filter: "blur(8px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ delay: 0.1 + i * 0.12, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              className={`inline-block text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.05] mr-4 mb-1 ${
+                i === 1
+                  ? "text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500"
+                  : "text-white"
+              }`}
+            >
+              {word}
+            </motion.span>
+          ))}
+
+          {/* Underline accent */}
+          <motion.div
+            initial={{ scaleX: 0, opacity: 0 }}
+            animate={{ scaleX: 1, opacity: 1 }}
+            transition={{ delay: 0.55, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            className="h-0.5 w-64 mx-auto mt-3 mb-8 origin-left bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 rounded-full"
+          />
+
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45, duration: 0.7 }}
+            className="text-lg text-slate-400 max-w-2xl mx-auto mb-12 leading-relaxed"
           >
-            Documentation
-          </a>
+            Enter any stock ticker to get real-time charts, AI insights,
+            risk analysis and plain-English explanations — built for beginner investors.
+          </motion.p>
+
+          <StockSearch onSearch={handleSearch} loading={loading} />
+
+          {/* Error */}
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -12, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -12, scale: 0.97 }}
+                transition={{ duration: 0.3 }}
+                className="mt-5 rounded-xl border border-red-500/30 bg-red-500/10 p-4 flex items-start gap-3 text-left"
+              >
+                <svg className="h-5 w-5 text-red-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                  <p className="text-sm font-semibold text-red-300">{error}</p>
+                  <p className="text-xs text-red-500/70 mt-1">Try: AAPL · TSLA · NVDA · MSFT · GOOGL · SPY</p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
-      </main>
+
+        {/* Scroll cue */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.8 }}
+          className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-slate-700"
+        >
+          <span className="text-[10px] uppercase tracking-widest">Scroll</span>
+          <motion.div
+            animate={{ y: [0, 10, 0], opacity: [0.4, 1, 0.4] }}
+            transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
+            className="h-6 w-px bg-gradient-to-b from-slate-600 to-transparent"
+          />
+        </motion.div>
+      </motion.section>
+
+      {/* ── Analysis results ───────────────────────────────────────────── */}
+      <div ref={resultsRef} className="relative mx-auto max-w-7xl px-6 pb-32">
+
+        {/* Loading */}
+        <AnimatePresence>
+          {loading && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 0.9, repeat: Infinity, ease: "linear" }}
+                  className="h-5 w-5 rounded-full border-2 border-cyan-500 border-t-transparent"
+                />
+                <span className="text-sm text-slate-400">
+                  Analyzing <span className="text-cyan-400 font-bold">{currentSymbol}</span>
+                  <motion.span animate={{ opacity: [0,1,0] }} transition={{ duration: 1.2, repeat: Infinity }}>…</motion.span>
+                </span>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 space-y-6">
+                  <Skeleton h={380} />
+                  <Skeleton h={460} />
+                </div>
+                <div className="space-y-5">
+                  <Skeleton h={200} />
+                  <Skeleton h={280} />
+                  <Skeleton h={200} />
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Results */}
+        <AnimatePresence mode="wait">
+          {data && !loading && (
+            <motion.div
+              key={currentSymbol}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.35 }}
+            >
+              {data.demo && <DemoBanner />}
+
+              {/* Divider */}
+              <div className="flex items-center gap-4 mb-8">
+                <div className="h-px flex-1 bg-gradient-to-r from-white/10 to-transparent" />
+                <motion.span
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.1 }}
+                  className="text-xs text-slate-600 uppercase tracking-widest font-medium px-3 py-1 rounded-full border border-white/8"
+                >
+                  Analysis · {currentSymbol}
+                </motion.span>
+                <div className="h-px flex-1 bg-gradient-to-l from-white/10 to-transparent" />
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                {/* Left col */}
+                <div className="lg:col-span-2 space-y-6">
+                  {/* Chart — slides in from left */}
+                  <motion.div
+                    initial={{ opacity: 0, x: -50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    <StockChart
+                      data={chartData}
+                      symbol={currentSymbol}
+                      totalReturn={data.metrics.totalReturn}
+                      currentPrice={data.quote.regularMarketPrice}
+                    />
+                  </motion.div>
+
+                  {/* AI insights — scroll reveal */}
+                  <Reveal delay={0.05} y={50}>
+                    <AIInsights
+                      insights={data.insights}
+                      metrics={data.metrics}
+                      symbol={currentSymbol}
+                      companyName={data.quote.shortName}
+                    />
+                  </Reveal>
+                </div>
+
+                {/* Right col — slides in from right */}
+                <div className="space-y-5">
+                  <motion.div
+                    initial={{ opacity: 0, x: 50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.7, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    <RiskIndicator metrics={data.metrics} />
+                  </motion.div>
+
+                  <motion.div
+                    initial={{ opacity: 0, x: 50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.7, delay: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                  >
+                    <MetricsPanel quote={data.quote} metrics={data.metrics} />
+                  </motion.div>
+                </div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── Empty / feature showcase ──────────────────────────────── */}
+        {!data && !loading && (
+          <div>
+            <Reveal delay={0.3} className="text-center mb-12">
+              <h2 className="text-3xl font-black text-white mb-3">
+                Everything you need to{" "}
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
+                  research stocks
+                </span>
+              </h2>
+              <p className="text-slate-500 text-sm max-w-md mx-auto">
+                Real market data · AI analysis · No signup · No API key
+              </p>
+            </Reveal>
+
+            <StaggerReveal className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {FEATURES.map(({ icon, title, desc, color, border }) => (
+                <motion.div
+                  key={title}
+                  variants={{
+                    hidden: { opacity: 0, y: 40, scale: 0.92 },
+                    show:   { opacity: 1, y: 0,  scale: 1,    transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] } },
+                  }}
+                  whileHover={{ y: -8, scale: 1.03 }}
+                  className={`rounded-2xl border ${border} bg-gradient-to-br ${color} p-5 cursor-default transition-shadow hover:shadow-lg hover:shadow-cyan-500/10`}
+                >
+                  <motion.span
+                    animate={{ rotate: [0, -8, 8, 0] }}
+                    transition={{ duration: 4, repeat: Infinity, delay: Math.random() * 2 }}
+                    className="text-3xl block mb-3"
+                  >
+                    {icon}
+                  </motion.span>
+                  <h3 className="text-sm font-bold text-white mb-2">{title}</h3>
+                  <p className="text-xs text-slate-400 leading-relaxed">{desc}</p>
+                </motion.div>
+              ))}
+            </StaggerReveal>
+
+            {/* Stats */}
+            <Reveal delay={0.2} className="mt-12">
+              <StaggerReveal className="grid grid-cols-3 gap-4 max-w-sm mx-auto text-center">
+                {[
+                  { val: "25+", label: "Metrics" },
+                  { val: "6",   label: "Time Ranges" },
+                  { val: "Free",label: "Always" },
+                ].map(({ val, label }) => (
+                  <motion.div
+                    key={label}
+                    variants={{
+                      hidden: { opacity: 0, scale: 0.7 },
+                      show:   { opacity: 1, scale: 1, transition: { type: "spring", stiffness: 200, damping: 18 } },
+                    }}
+                    whileHover={{ scale: 1.08 }}
+                    className="rounded-xl border border-white/8 bg-white/[0.03] p-4"
+                  >
+                    <p className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">{val}</p>
+                    <p className="text-xs text-slate-500 mt-1">{label}</p>
+                  </motion.div>
+                ))}
+              </StaggerReveal>
+            </Reveal>
+          </div>
+        )}
+      </div>
+
+      {/* ── Footer ────────────────────────────────────────────────────── */}
+      <motion.footer
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.6 }}
+        className="border-t border-white/6 bg-white/[0.015] py-8"
+      >
+        <div className="mx-auto max-w-7xl px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+          <div className="flex items-center gap-2">
+            <div className="h-5 w-5 rounded-md bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+              <svg className="h-2.5 w-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
+              </svg>
+            </div>
+            <span className="font-semibold text-slate-500">StockSage AI</span>
+          </div>
+          <p>Data from Yahoo Finance · For educational use only · Not financial advice</p>
+          <p>Next.js · Tailwind · Framer Motion · Netlify</p>
+        </div>
+      </motion.footer>
     </div>
   );
 }
