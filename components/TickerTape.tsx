@@ -51,7 +51,7 @@ export default function TickerTape() {
 
   return (
     <div className="w-full overflow-hidden border-y border-white/6 bg-white/[0.02] py-2.5">
-      <div className="ticker-tape flex gap-8" style={{ width: "max-content" }}>
+      <div className="ticker-tape flex gap-8" style={{ width: "max-content", willChange: "transform" }}>
         {double.map((item, i) => (
           <div key={i} className="flex items-center gap-2 whitespace-nowrap px-4">
             <span className="text-xs font-bold text-white">{item.sym}</span>

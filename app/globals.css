@@ -83,6 +83,31 @@ body {
   animation: float 6s ease-in-out infinite;
 }
 
+/* Background orbs — CSS so they run on compositor thread */
+@keyframes orb-1 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(60px, -40px) scale(1.08); }
+}
+@keyframes orb-2 {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50%       { transform: translate(-55px, 48px) scale(1.12); }
+}
+@keyframes orb-3 {
+  0%, 100% { transform: translate(0, 0); }
+  50%       { transform: translate(38px, 28px); }
+}
+
+.orb-1 { animation: orb-1 22s ease-in-out infinite;      will-change: transform; }
+.orb-2 { animation: orb-2 28s ease-in-out infinite  6s;  will-change: transform; }
+.orb-3 { animation: orb-3 18s ease-in-out infinite 12s;  will-change: transform; }
+
+/* Scroll cue bob */
+@keyframes bob {
+  0%, 100% { transform: translateY(0);    opacity: 0.4; }
+  50%       { transform: translateY(10px); opacity: 1;   }
+}
+.bob { animation: bob 1.6s ease-in-out infinite; will-change: transform; }
+
 /* Ticker tape */
 @keyframes ticker {
   0% { transform: translateX(0); }

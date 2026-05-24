@@ -6,7 +6,6 @@ import {
   AnimatePresence,
   useScroll,
   useTransform,
-  useSpring,
   useInView,
 } from "framer-motion";
 import Navbar from "@/components/Navbar";
@@ -24,22 +23,16 @@ import { prepareChartData } from "@/lib/calculations";
 function Orbs() {
   return (
     <div className="fixed inset-0 pointer-events-none overflow-hidden">
-      <motion.div
-        animate={{ x: [0, 60, 0], y: [0, -40, 0], scale: [1, 1.1, 1] }}
-        transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-1/4 left-1/5 h-[700px] w-[700px] rounded-full"
+      <div
+        className="orb-1 absolute top-1/4 left-1/5 h-[700px] w-[700px] rounded-full"
         style={{ background: "radial-gradient(circle, rgba(34,211,238,0.045) 0%, transparent 70%)" }}
       />
-      <motion.div
-        animate={{ x: [0, -60, 0], y: [0, 50, 0], scale: [1, 1.15, 1] }}
-        transition={{ duration: 28, repeat: Infinity, ease: "easeInOut", delay: 6 }}
-        className="absolute bottom-1/4 right-1/5 h-[600px] w-[600px] rounded-full"
+      <div
+        className="orb-2 absolute bottom-1/4 right-1/5 h-[600px] w-[600px] rounded-full"
         style={{ background: "radial-gradient(circle, rgba(139,92,246,0.05) 0%, transparent 70%)" }}
       />
-      <motion.div
-        animate={{ x: [0, 40, 0], y: [0, 30, 0] }}
-        transition={{ duration: 18, repeat: Infinity, ease: "easeInOut", delay: 12 }}
-        className="absolute top-2/3 left-1/2 h-[400px] w-[400px] rounded-full"
+      <div
+        className="orb-3 absolute top-2/3 left-1/2 h-[400px] w-[400px] rounded-full"
         style={{ background: "radial-gradient(circle, rgba(59,130,246,0.04) 0%, transparent 70%)" }}
       />
       <div
@@ -106,10 +99,10 @@ function StaggerReveal({
 
 /* ── Feature card ────────────────────────────────────────────────────────── */
 const FEATURES = [
-  { icon: "📊", title: "Real Financial Data",    desc: "Live quotes + historical OHLCV from Yahoo Finance — 25+ metrics, no API key needed.",           color: "from-cyan-500/15 to-blue-500/8",    border: "border-cyan-500/20" },
-  { icon: "🧠", title: "GPT-4o mini Analysis",   desc: "Real-time AI explanations of momentum, trend, and risk — written for beginner investors with zero jargon.",       color: "from-purple-500/15 to-pink-500/8",  border: "border-purple-500/20" },
-  { icon: "📈", title: "Interactive Charts",     desc: "Area price chart + volume bars with moving average overlays and smooth tooltips.", color: "from-green-500/15 to-teal-500/8",   border: "border-green-500/20" },
-  { icon: "⚡", title: "Risk Scoring",           desc: "Volatility, Sharpe ratio, max drawdown and a visual risk meter — all explained in plain English.",       color: "from-orange-500/15 to-yellow-500/8",border: "border-orange-500/20" },
+  { icon: "📊", title: "Real Financial Data",  desc: "Live quotes + historical OHLCV from Yahoo Finance — 25+ metrics, no API key needed.",                    color: "from-cyan-500/15 to-blue-500/8",    border: "border-cyan-500/20",  delay: 0 },
+  { icon: "🧠", title: "GPT-4o mini Analysis", desc: "Real-time AI explanations of momentum, trend, and risk — written for beginner investors with zero jargon.", color: "from-purple-500/15 to-pink-500/8",  border: "border-purple-500/20", delay: 0.08 },
+  { icon: "📈", title: "Interactive Charts",   desc: "Area price chart + volume bars with moving average overlays and smooth tooltips.",                         color: "from-green-500/15 to-teal-500/8",   border: "border-green-500/20",  delay: 0.16 },
+  { icon: "⚡", title: "Risk Scoring",         desc: "Volatility, Sharpe ratio, max drawdown and a visual risk meter — all explained in plain English.",          color: "from-orange-500/15 to-yellow-500/8",border: "border-orange-500/20", delay: 0.24 },
 ];
 
 const PROBLEM_ROWS = [
@@ -169,7 +162,6 @@ export default function Home() {
   const { scrollYProgress } = useScroll();
   const heroScale   = useTransform(scrollYProgress, [0, 0.3], [1, 0.95]);
   const heroOpacity = useTransform(scrollYProgress, [0, 0.22], [1, 0.6]);
-  const springScale = useSpring(heroScale, { stiffness: 80, damping: 25 });
 
   const handleSearch = useCallback(async (symbol: string, range: TimeRange) => {
     setLoading(true);
@@ -229,7 +221,7 @@ export default function Home() {
 
       {/* ── Hero ──────────────────────────────────────────────────────── */}
       <motion.section
-        style={{ scale: springScale, opacity: heroOpacity }}
+        style={{ scale: heroScale, opacity: heroOpacity, willChange: "transform, opacity" }}
         className="relative min-h-screen flex flex-col justify-center pt-20"
       >
         <div className="absolute top-20 left-0 right-0">
@@ -244,19 +236,15 @@ export default function Home() {
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-4 py-2 text-xs text-cyan-400 mb-8"
           >
-            <motion.span
-              animate={{ scale: [1, 1.6, 1], opacity: [1, 0.4, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="h-1.5 w-1.5 rounded-full bg-cyan-400"
-            />
+            <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
             AI-Powered Stock Research · Free · No API Key Required
           </motion.div>
 
           {/* Headline */}
           <motion.h1
-            initial={{ opacity: 0, y: 40, filter: "blur(8px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ delay: 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-tight mb-4"
           >
             <span className="text-white">Smart </span>
@@ -317,11 +305,7 @@ export default function Home() {
           className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-slate-700"
         >
           <span className="text-[10px] uppercase tracking-widest">Scroll</span>
-          <motion.div
-            animate={{ y: [0, 10, 0], opacity: [0.4, 1, 0.4] }}
-            transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
-            className="h-6 w-px bg-gradient-to-b from-slate-600 to-transparent"
-          />
+          <div className="bob h-6 w-px bg-gradient-to-b from-slate-600 to-transparent" />
         </motion.div>
       </motion.section>
 
@@ -456,29 +440,23 @@ export default function Home() {
               </p>
             </Reveal>
 
-            <StaggerReveal className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {FEATURES.map(({ icon, title, desc, color, border }) => (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {FEATURES.map(({ icon, title, desc, color, border, delay }) => (
                 <motion.div
                   key={title}
-                  variants={{
-                    hidden: { opacity: 0, y: 40, scale: 0.92 },
-                    show:   { opacity: 1, y: 0,  scale: 1,    transition: { duration: 0.55, ease: [0.16, 1, 0.3, 1] } },
-                  }}
-                  whileHover={{ y: -8, scale: 1.03 }}
+                  initial={{ opacity: 0, y: 40, scale: 0.92 }}
+                  whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                  viewport={{ once: true, margin: "-40px" }}
+                  transition={{ duration: 0.5, delay, ease: [0.16, 1, 0.3, 1] }}
+                  whileHover={{ y: -6, scale: 1.02 }}
                   className={`rounded-2xl border ${border} bg-gradient-to-br ${color} p-5 cursor-default transition-shadow hover:shadow-lg hover:shadow-cyan-500/10`}
                 >
-                  <motion.span
-                    animate={{ rotate: [0, -8, 8, 0] }}
-                    transition={{ duration: 4, repeat: Infinity, delay: Math.random() * 2 }}
-                    className="text-3xl block mb-3"
-                  >
-                    {icon}
-                  </motion.span>
+                  <span className="text-3xl block mb-3">{icon}</span>
                   <h3 className="text-sm font-bold text-white mb-2">{title}</h3>
                   <p className="text-xs text-slate-400 leading-relaxed">{desc}</p>
                 </motion.div>
               ))}
-            </StaggerReveal>
+            </div>
 
             {/* Stats */}
             <Reveal delay={0.2} className="mt-12">
