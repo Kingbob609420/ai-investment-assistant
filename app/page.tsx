@@ -234,29 +234,27 @@ export default function Home() {
             AI-Powered Stock Research · Free · No API Key Required
           </motion.div>
 
-          {/* Headline — each word fades in */}
-          {["Smart", "Investment", "Research"].map((word, i) => (
-            <motion.span
-              key={word}
-              initial={{ opacity: 0, y: 40, filter: "blur(8px)" }}
-              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-              transition={{ delay: 0.1 + i * 0.12, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className={`inline-block text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-[1.05] mr-4 mb-1 ${
-                i === 1
-                  ? "text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500"
-                  : "text-white"
-              }`}
-            >
-              {word}
-            </motion.span>
-          ))}
+          {/* Headline */}
+          <motion.h1
+            initial={{ opacity: 0, y: 40, filter: "blur(8px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ delay: 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="text-5xl sm:text-6xl lg:text-7xl font-black tracking-tight leading-tight mb-4"
+          >
+            <span className="text-white">Smart </span>
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500">
+              Investment
+            </span>
+            <br />
+            <span className="text-white">Research</span>
+          </motion.h1>
 
           {/* Underline accent */}
           <motion.div
             initial={{ scaleX: 0, opacity: 0 }}
             animate={{ scaleX: 1, opacity: 1 }}
-            transition={{ delay: 0.55, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-            className="h-0.5 w-64 mx-auto mt-3 mb-8 origin-left bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 rounded-full"
+            transition={{ delay: 0.4, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
+            className="h-0.5 w-48 mx-auto mt-1 mb-8 origin-center bg-gradient-to-r from-cyan-500 via-blue-500 to-purple-500 rounded-full"
           />
 
           <motion.p

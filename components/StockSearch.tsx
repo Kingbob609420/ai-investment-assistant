@@ -41,16 +41,16 @@ export default function StockSearch({ onSearch, loading }: Props) {
           transition={{ duration: 0.2 }}
           className="relative flex-1 group"
         >
-          {/* Glow behind input */}
+          {/* Subtle glow on focus */}
           <motion.div
             animate={focused ? { opacity: 1 } : { opacity: 0 }}
             transition={{ duration: 0.3 }}
-            className="absolute -inset-px rounded-2xl bg-gradient-to-r from-cyan-500/30 via-blue-500/30 to-purple-500/30 blur-lg"
+            className="absolute -inset-px rounded-2xl bg-cyan-500/10 blur-md"
           />
 
           <div
-            className={`relative flex items-center rounded-2xl border bg-white/5 backdrop-blur-sm overflow-hidden transition-all duration-300 ${
-              focused ? "border-cyan-500/60" : "border-white/10 hover:border-white/20"
+            className={`relative flex items-center rounded-2xl border bg-[#0d111f] overflow-hidden transition-all duration-300 ${
+              focused ? "border-cyan-500/50" : "border-white/10 hover:border-white/20"
             }`}
           >
             <motion.div
@@ -94,19 +94,12 @@ export default function StockSearch({ onSearch, loading }: Props) {
         </motion.div>
 
         <motion.button
-          whileHover={{ scale: 1.04, boxShadow: "0 0 24px rgba(34,211,238,0.4)" }}
-          whileTap={{ scale: 0.96 }}
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
           onClick={handleSearch}
           disabled={loading || !input.trim()}
-          className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-7 py-4 text-sm font-bold text-white shadow-lg shadow-cyan-500/25 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="relative rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 px-7 py-4 text-sm font-bold text-white shadow-md shadow-cyan-900/40 disabled:opacity-40 disabled:cursor-not-allowed"
         >
-          {/* Shimmer overlay on hover */}
-          <motion.div
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -skew-x-12"
-            initial={{ x: "-100%" }}
-            whileHover={{ x: "200%" }}
-            transition={{ duration: 0.5 }}
-          />
           <div className="relative flex items-center gap-2">
             {loading ? (
               <>
