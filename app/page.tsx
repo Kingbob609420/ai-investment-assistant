@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import {
   motion,
   AnimatePresence,
@@ -156,6 +156,15 @@ export default function Home() {
   const [currentSymbol,  setCurrentSymbol] = useState("");
   const [selectedRange,  setSelectedRange] = useState<TimeRange>("1Y");
   const resultsRef = useRef<HTMLDivElement>(null);
+
+  // Auto-search when coming from dashboard
+  useEffect(() => {
+    const sym = sessionStorage.getItem("stocksage_autosearch");
+    if (sym) {
+      sessionStorage.removeItem("stocksage_autosearch");
+      handleSearch(sym, "1Y");
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const { scrollYProgress } = useScroll();
   const heroScale   = useTransform(scrollYProgress, [0, 0.3], [1, 0.95]);

@@ -6,6 +6,9 @@ export interface WatchlistItem {
   symbol: string;
   name: string;
   addedAt: number;
+  score?: number;
+  riskLevel?: "low" | "medium" | "high";
+  price?: number;
 }
 
 interface WatchlistCtx {
@@ -14,7 +17,13 @@ interface WatchlistCtx {
   openDrawer: () => void;
   closeDrawer: () => void;
   toggleDrawer: () => void;
-  addToWatchlist: (symbol: string, name: string) => void;
+  addToWatchlist: (
+    symbol: string,
+    name: string,
+    score?: number,
+    riskLevel?: "low" | "medium" | "high",
+    price?: number
+  ) => void;
   removeFromWatchlist: (symbol: string) => void;
   isWatched: (symbol: string) => boolean;
 }
@@ -25,7 +34,6 @@ export function WatchlistProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<WatchlistItem[]>([]);
   const [isOpen, setIsOpen] = useState(false);
 
-  // Load from localStorage on mount
   useEffect(() => {
     try {
       const raw = localStorage.getItem("stocksage_watchlist");
@@ -33,19 +41,21 @@ export function WatchlistProvider({ children }: { children: React.ReactNode }) {
     } catch {}
   }, []);
 
-  // Persist whenever items change
   useEffect(() => {
     try {
       localStorage.setItem("stocksage_watchlist", JSON.stringify(items));
     } catch {}
   }, [items]);
 
-  const addToWatchlist = useCallback((symbol: string, name: string) => {
-    setItems((prev) => {
-      if (prev.some((i) => i.symbol === symbol)) return prev;
-      return [...prev, { symbol, name, addedAt: Date.now() }];
-    });
-  }, []);
+  const addToWatchlist = useCallback(
+    (symbol: string, name: string, score?: number, riskLevel?: "low" | "medium" | "high", price?: number) => {
+      setItems((prev) => {
+        if (prev.some((i) => i.symbol === symbol)) return prev;
+        return [...prev, { symbol, name, addedAt: Date.now(), score, riskLevel, price }];
+      });
+    },
+    []
+  );
 
   const removeFromWatchlist = useCallback((symbol: string) => {
     setItems((prev) => prev.filter((i) => i.symbol !== symbol));

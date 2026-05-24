@@ -162,7 +162,11 @@ export default function AIInsights({ insights, metrics, quote, symbol, companyNa
 
   function handleWatchlist() {
     if (watched) { removeFromWatchlist(symbol); }
-    else { addToWatchlist(symbol, companyName); openDrawer(); }
+    else {
+      const rl: "low" | "medium" | "high" = metrics.volatility > 30 ? "high" : metrics.volatility > 20 ? "medium" : "low";
+      addToWatchlist(symbol, companyName, score, rl, quote.regularMarketPrice);
+      openDrawer();
+    }
   }
 
   function copyReport() {

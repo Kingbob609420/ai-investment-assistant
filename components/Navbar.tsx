@@ -57,16 +57,12 @@ export default function Navbar() {
             transition={{ delay: 0.2, duration: 0.4 }}
             className="hidden md:flex items-center gap-1"
           >
-            {["Dashboard", "Insights"].map((item) => (
-              <a
-                key={item}
-                href="#"
-                onClick={(e) => e.preventDefault()}
-                className="relative group px-3 py-1.5 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-200"
-              >
-                {item}
-              </a>
-            ))}
+            <a
+              href="/dashboard"
+              className="relative group px-3 py-1.5 rounded-lg text-sm text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-200"
+            >
+              Dashboard
+            </a>
 
             {/* Watchlist nav link */}
             <motion.button
