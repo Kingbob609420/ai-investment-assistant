@@ -24,7 +24,8 @@ export default function Navbar() {
         <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
 
           {/* Logo */}
-          <motion.div
+          <motion.a
+            href="/"
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
@@ -48,7 +49,7 @@ export default function Navbar() {
               </span>
               <p className="text-[10px] text-slate-500 leading-none mt-0.5">Investment Research</p>
             </div>
-          </motion.div>
+          </motion.a>
 
           {/* Center links */}
           <motion.div
