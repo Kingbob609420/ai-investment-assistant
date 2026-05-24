@@ -106,10 +106,17 @@ function StaggerReveal({
 
 /* ── Feature card ────────────────────────────────────────────────────────── */
 const FEATURES = [
-  { icon: "📊", title: "Real Financial Data",    desc: "Live quotes + historical OHLCV from Yahoo Finance — no API key needed.",           color: "from-cyan-500/15 to-blue-500/8",    border: "border-cyan-500/20" },
-  { icon: "🧠", title: "AI-Powered Insights",    desc: "Plain-English analysis of momentum, trend, and risk for beginner investors.",       color: "from-purple-500/15 to-pink-500/8",  border: "border-purple-500/20" },
+  { icon: "📊", title: "Real Financial Data",    desc: "Live quotes + historical OHLCV from Yahoo Finance — 25+ metrics, no API key needed.",           color: "from-cyan-500/15 to-blue-500/8",    border: "border-cyan-500/20" },
+  { icon: "🧠", title: "GPT-4o mini Analysis",   desc: "Real-time AI explanations of momentum, trend, and risk — written for beginner investors with zero jargon.",       color: "from-purple-500/15 to-pink-500/8",  border: "border-purple-500/20" },
   { icon: "📈", title: "Interactive Charts",     desc: "Area price chart + volume bars with moving average overlays and smooth tooltips.", color: "from-green-500/15 to-teal-500/8",   border: "border-green-500/20" },
-  { icon: "⚡", title: "Risk Scoring",           desc: "Volatility, Sharpe ratio, max drawdown and a visual risk meter — instantly.",       color: "from-orange-500/15 to-yellow-500/8",border: "border-orange-500/20" },
+  { icon: "⚡", title: "Risk Scoring",           desc: "Volatility, Sharpe ratio, max drawdown and a visual risk meter — all explained in plain English.",       color: "from-orange-500/15 to-yellow-500/8",border: "border-orange-500/20" },
+];
+
+const PROBLEM_ROWS = [
+  { tool: "Bloomberg Terminal", cost: "$24,000/yr", jargon: true,  beginner: false, ai: false },
+  { tool: "Robinhood / Webull", cost: "Free",       jargon: true,  beginner: false, ai: false },
+  { tool: "ChatGPT (alone)",    cost: "Varies",     jargon: false, beginner: true,  ai: true  },
+  { tool: "StockSage AI",       cost: "Free",       jargon: false, beginner: true,  ai: true  },
 ];
 
 /* ── Loading skeleton ────────────────────────────────────────────────────── */
@@ -143,10 +150,11 @@ function DemoBanner() {
 
 /* ── Main ────────────────────────────────────────────────────────────────── */
 export default function Home() {
-  const [data,          setData]          = useState<StockData | null>(null);
-  const [loading,       setLoading]       = useState(false);
-  const [error,         setError]         = useState<string | null>(null);
-  const [currentSymbol, setCurrentSymbol] = useState("");
+  const [data,           setData]          = useState<StockData | null>(null);
+  const [loading,        setLoading]       = useState(false);
+  const [error,          setError]         = useState<string | null>(null);
+  const [currentSymbol,  setCurrentSymbol] = useState("");
+  const [selectedRange,  setSelectedRange] = useState<TimeRange>("1Y");
   const resultsRef = useRef<HTMLDivElement>(null);
 
   const { scrollYProgress } = useScroll();
@@ -158,6 +166,7 @@ export default function Home() {
     setLoading(true);
     setError(null);
     setCurrentSymbol(symbol);
+    setSelectedRange(range);
     setData(null);
 
     try {
@@ -263,8 +272,8 @@ export default function Home() {
             transition={{ delay: 0.45, duration: 0.7 }}
             className="text-lg text-slate-400 max-w-2xl mx-auto mb-12 leading-relaxed"
           >
-            Enter any stock ticker to get real-time charts, AI insights,
-            risk analysis and plain-English explanations — built for beginner investors.
+            Real-time charts, GPT-4o mini analysis, and risk scoring explained in plain English —
+            built for first-time investors who can&apos;t afford a financial advisor.
           </motion.p>
 
           <StockSearch onSearch={handleSearch} loading={loading} />
@@ -392,8 +401,10 @@ export default function Home() {
                     <AIInsights
                       insights={data.insights}
                       metrics={data.metrics}
+                      quote={data.quote}
                       symbol={currentSymbol}
                       companyName={data.quote.shortName}
+                      range={selectedRange}
                     />
                   </Reveal>
                 </div>
@@ -482,6 +493,110 @@ export default function Home() {
                   </motion.div>
                 ))}
               </StaggerReveal>
+            </Reveal>
+
+            {/* ── Community Impact ───────────────────────────────── */}
+            <Reveal delay={0.1} className="mt-24">
+              <div className="rounded-2xl border border-cyan-500/20 bg-gradient-to-br from-cyan-500/8 to-blue-500/5 p-8 text-center">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  className="inline-flex items-center gap-2 rounded-full border border-cyan-500/30 bg-cyan-500/10 px-3 py-1.5 text-xs text-cyan-400 mb-5"
+                >
+                  <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse" />
+                  Community Impact
+                </motion.div>
+                <h2 className="text-3xl sm:text-4xl font-black text-white mb-4 leading-tight">
+                  Built for the{" "}
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
+                    50M+ Americans
+                  </span>
+                  <br />who want to invest — but don&apos;t know where to start
+                </h2>
+                <p className="text-slate-400 max-w-2xl mx-auto text-sm leading-relaxed mb-8">
+                  First-time retail investors aged 18–30 face a real barrier: financial advisors charge
+                  $250–400/hr and require $100K+ minimums. Social media is their only alternative — and
+                  83% of Gen Z already rely on it for financial advice (FINRA 2023). We&apos;re changing that.
+                </p>
+                <StaggerReveal className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl mx-auto">
+                  {[
+                    { stat: "83%",   desc: "of Gen Z use social media for financial guidance (FINRA 2023)" },
+                    { stat: "$385",  desc: "average hourly cost of a financial advisor — out of reach for most beginners" },
+                    { stat: "0",     desc: "cost to use StockSage AI — real data, plain English, no paywall" },
+                  ].map(({ stat, desc }) => (
+                    <motion.div
+                      key={stat}
+                      variants={{
+                        hidden: { opacity: 0, y: 20 },
+                        show:   { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.16, 1, 0.3, 1] } },
+                      }}
+                      className="rounded-xl border border-white/10 bg-white/[0.04] p-5"
+                    >
+                      <p className="text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 mb-2">{stat}</p>
+                      <p className="text-xs text-slate-500 leading-relaxed">{desc}</p>
+                    </motion.div>
+                  ))}
+                </StaggerReveal>
+              </div>
+            </Reveal>
+
+            {/* ── Why existing tools fail ────────────────────────── */}
+            <Reveal delay={0.1} className="mt-12">
+              <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-8">
+                <div className="text-center mb-8">
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true }}
+                    className="inline-flex items-center gap-2 rounded-full border border-purple-500/30 bg-purple-500/10 px-3 py-1.5 text-xs text-purple-400 mb-4"
+                  >
+                    <span className="h-1.5 w-1.5 rounded-full bg-purple-400 animate-pulse" />
+                    Originality
+                  </motion.div>
+                  <h2 className="text-2xl font-black text-white mb-2">Why existing tools fail beginners</h2>
+                  <p className="text-slate-500 text-sm max-w-lg mx-auto">
+                    StockSage AI is the only tool that combines live market data with AI-generated plain-English explanations — free, for everyone.
+                  </p>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="text-left border-b border-white/8">
+                        <th className="pb-3 pr-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Tool</th>
+                        <th className="pb-3 pr-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Cost</th>
+                        <th className="pb-3 pr-6 text-xs font-semibold text-slate-500 uppercase tracking-wider">Beginner-friendly</th>
+                        <th className="pb-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Real-time AI explanation</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/5">
+                      {PROBLEM_ROWS.map(({ tool, cost, jargon, beginner, ai }, i) => (
+                        <motion.tr
+                          key={tool}
+                          initial={{ opacity: 0, x: -20 }}
+                          whileInView={{ opacity: 1, x: 0 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: i * 0.08 }}
+                          className={tool === "StockSage AI" ? "bg-cyan-500/5 rounded-lg" : ""}
+                        >
+                          <td className={`py-3.5 pr-6 font-semibold ${tool === "StockSage AI" ? "text-cyan-400" : "text-slate-300"}`}>{tool}</td>
+                          <td className="py-3.5 pr-6 text-slate-400">{cost}</td>
+                          <td className="py-3.5 pr-6">
+                            {beginner
+                              ? <span className="text-green-400 font-bold">Yes</span>
+                              : <span className="text-red-400">No — jargon-heavy</span>}
+                          </td>
+                          <td className="py-3.5">
+                            {ai
+                              ? <span className="inline-flex items-center gap-1 text-green-400 font-bold"><span className="h-1.5 w-1.5 rounded-full bg-green-400 animate-pulse" />Yes</span>
+                              : <span className="text-slate-600">No</span>}
+                          </td>
+                        </motion.tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </Reveal>
           </div>
         )}
