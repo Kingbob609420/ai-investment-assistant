@@ -219,7 +219,7 @@ export default function DashboardPage() {
   }, []);
 
   function handleAnalyze(symbol: string) {
-    sessionStorage.setItem("stocksage_autosearch", symbol);
+    sessionStorage.setItem("quantify_autosearch", symbol);
     router.push("/");
   }
 

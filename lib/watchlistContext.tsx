@@ -36,14 +36,14 @@ export function WatchlistProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     try {
-      const raw = localStorage.getItem("stocksage_watchlist");
+      const raw = localStorage.getItem("quantify_watchlist");
       if (raw) setItems(JSON.parse(raw));
     } catch {}
   }, []);
 
   useEffect(() => {
     try {
-      localStorage.setItem("stocksage_watchlist", JSON.stringify(items));
+      localStorage.setItem("quantify_watchlist", JSON.stringify(items));
     } catch {}
   }, [items]);
 

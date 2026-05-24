@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "StockSage AI — Investment Research Assistant",
+  title: "Quantify AI — Investment Research Assistant",
   description:
     "AI-powered stock analysis for beginner investors. Real-time charts, risk metrics, and plain-English insights.",
 };

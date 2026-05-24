@@ -44,7 +44,7 @@ export default function Navbar() {
             </div>
             <div>
               <span className="text-base font-bold text-white tracking-tight">
-                StockSage{" "}
+                Quantify{" "}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">AI</span>
               </span>
               <p className="text-[10px] text-slate-500 leading-none mt-0.5">Investment Research</p>

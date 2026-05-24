@@ -109,7 +109,7 @@ const PROBLEM_ROWS = [
   { tool: "Bloomberg Terminal", cost: "$24,000/yr", jargon: true,  beginner: false, ai: false },
   { tool: "Robinhood / Webull", cost: "Free",       jargon: true,  beginner: false, ai: false },
   { tool: "ChatGPT (alone)",    cost: "Varies",     jargon: false, beginner: true,  ai: true  },
-  { tool: "StockSage AI",       cost: "Free",       jargon: false, beginner: true,  ai: true  },
+  { tool: "Quantify AI",       cost: "Free",       jargon: false, beginner: true,  ai: true  },
 ];
 
 /* ── Loading skeleton ────────────────────────────────────────────────────── */
@@ -152,9 +152,9 @@ export default function Home() {
 
   // Auto-search when coming from dashboard
   useEffect(() => {
-    const sym = sessionStorage.getItem("stocksage_autosearch");
+    const sym = sessionStorage.getItem("quantify_autosearch");
     if (sym) {
-      sessionStorage.removeItem("stocksage_autosearch");
+      sessionStorage.removeItem("quantify_autosearch");
       handleSearch(sym, "1Y");
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -510,7 +510,7 @@ export default function Home() {
                   {[
                     { stat: "83%",   desc: "of Gen Z use social media for financial guidance (FINRA 2023)" },
                     { stat: "$385",  desc: "average hourly cost of a financial advisor — out of reach for most beginners" },
-                    { stat: "0",     desc: "cost to use StockSage AI — real data, plain English, no paywall" },
+                    { stat: "0",     desc: "cost to use Quantify AI — real data, plain English, no paywall" },
                   ].map(({ stat, desc }) => (
                     <motion.div
                       key={stat}
@@ -543,7 +543,7 @@ export default function Home() {
                   </motion.div>
                   <h2 className="text-2xl font-black text-white mb-2">Why existing tools fail beginners</h2>
                   <p className="text-slate-500 text-sm max-w-lg mx-auto">
-                    StockSage AI is the only tool that combines live market data with AI-generated plain-English explanations — free, for everyone.
+                    Quantify AI is the only tool that combines live market data with AI-generated plain-English explanations — free, for everyone.
                   </p>
                 </div>
                 <div className="overflow-x-auto">
@@ -564,9 +564,9 @@ export default function Home() {
                           whileInView={{ opacity: 1, x: 0 }}
                           viewport={{ once: true }}
                           transition={{ delay: i * 0.08 }}
-                          className={tool === "StockSage AI" ? "bg-cyan-500/5 rounded-lg" : ""}
+                          className={tool === "Quantify AI" ? "bg-cyan-500/5 rounded-lg" : ""}
                         >
-                          <td className={`py-3.5 pr-6 font-semibold ${tool === "StockSage AI" ? "text-cyan-400" : "text-slate-300"}`}>{tool}</td>
+                          <td className={`py-3.5 pr-6 font-semibold ${tool === "Quantify AI" ? "text-cyan-400" : "text-slate-300"}`}>{tool}</td>
                           <td className="py-3.5 pr-6 text-slate-400">{cost}</td>
                           <td className="py-3.5 pr-6">
                             {beginner
@@ -604,7 +604,7 @@ export default function Home() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
               </svg>
             </div>
-            <span className="font-semibold text-slate-500">StockSage AI</span>
+            <span className="font-semibold text-slate-500">Quantify AI</span>
           </div>
           <p>Data from Yahoo Finance · For educational use only · Not financial advice</p>
           <p>Next.js · Tailwind · Framer Motion · Netlify</p>
